@@ -1,9 +1,14 @@
 package com.example.controller;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.EnableLoadTimeWeaving;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -57,76 +62,76 @@ public class ArticleController {
 		 * return "articlelist";
 		 */
 
+		/*
+		 * List<Article> articleList = articleRepository.findAll(); List<Comment>
+		 * commentList = new ArrayList<>(); List<Article> articleList2 = new
+		 * ArrayList<>(); Article article2=new Article(); int i = 0; for (Article
+		 * article : articleList) { if (i == 0) {
+		 * 
+		 * commentList.addAll(article.getCommentList());
+		 * article2.setId(article.getId()); article2.setName(article.getName());
+		 * article2.setContent(article.getContent()); if(articleList.size()==1) {
+		 * article2.setCommentList(commentList); articleList2.add(article2); } i++;
+		 * continue; }
+		 * 
+		 * if(i==(articleList.size()-1)&&articleList.get(i).getId() != articleList.get(i
+		 * - 1).getId()) { article2.setCommentList(commentList);
+		 * articleList2.add(article2); commentList=new ArrayList<>(); article2=new
+		 * Article(); commentList.addAll(article.getCommentList());
+		 * article2.setCommentList(commentList); article2.setId(article.getId());
+		 * article2.setName(article.getName());
+		 * article2.setContent(article.getContent()); articleList2.add(article2);
+		 * continue; } if(i==(articleList.size()-1)&&articleList.get(i).getId() ==
+		 * articleList.get(i - 1).getId()) {
+		 * 
+		 * commentList.addAll(article.getCommentList());
+		 * article2.setCommentList(commentList); article2.setId(article.getId());
+		 * article2.setName(article.getName());
+		 * article2.setContent(article.getContent()); articleList2.add(article2);
+		 * continue; }
+		 * 
+		 * if (i!=0&&articleList.get(i).getId() == articleList.get(i - 1).getId()) {
+		 * commentList.addAll(article.getCommentList());
+		 * article2.setId(article.getId()); article2.setName(article.getName());
+		 * article2.setContent(article.getContent()); i++; continue; } else if
+		 * (i!=0&&articleList.get(i).getId() != articleList.get(i - 1).getId()) {
+		 * 
+		 * article2.setCommentList(commentList);
+		 * 
+		 * articleList2.add(article2); commentList = new ArrayList<>(); article2=new
+		 * Article(); commentList.addAll(article.getCommentList());
+		 * article2.setId(article.getId()); article2.setName(article.getName());
+		 * article2.setContent(article.getContent()); i++; continue; }
+		 * 
+		 * }
+		 * 
+		 * model.addAttribute("articleList",articleList2);
+		 */
 		List<Article> articleList = articleRepository.findAll();
+		List<Integer> idList = new ArrayList<>();
 		List<Comment> commentList = new ArrayList<>();
+		Article article2 = new Article();
 		List<Article> articleList2 = new ArrayList<>();
-		Article article2=new Article();
-		int i = 0;
 		for (Article article : articleList) {
-			if (i == 0) {
-				
-				commentList.addAll(article.getCommentList());
-				article2.setId(article.getId());
-				article2.setName(article.getName());
-				article2.setContent(article.getContent());
-				if(articleList.size()==1) {
-					article2.setCommentList(commentList);
-					articleList2.add(article2);
-				}
-				i++;
-				continue;
-			}
-			
-			if(i==(articleList.size()-1)&&articleList.get(i).getId() != articleList.get(i - 1).getId()) {
-				article2.setCommentList(commentList);
-				articleList2.add(article2);
-				commentList=new ArrayList<>();
-				article2=new Article();
-				commentList.addAll(article.getCommentList());
-				article2.setCommentList(commentList);
-				article2.setId(article.getId());
-				article2.setName(article.getName());
-				article2.setContent(article.getContent());
-				articleList2.add(article2);
-				continue;
-			}
-			if(i==(articleList.size()-1)&&articleList.get(i).getId() == articleList.get(i - 1).getId()) {
-				
-				commentList.addAll(article.getCommentList());
-				article2.setCommentList(commentList);
-				article2.setId(article.getId());
-				article2.setName(article.getName());
-				article2.setContent(article.getContent());
-				articleList2.add(article2);
-				continue;
-			}
-			
-			if (i!=0&&articleList.get(i).getId() == articleList.get(i - 1).getId()) {
-				commentList.addAll(article.getCommentList());
-				article2.setId(article.getId());
-				article2.setName(article.getName());
-				article2.setContent(article.getContent());
-				i++;
-				continue;
-			} else if (i!=0&&articleList.get(i).getId() != articleList.get(i - 1).getId()) {
-				
-				article2.setCommentList(commentList);
-				
-				articleList2.add(article2);
-				commentList = new ArrayList<>();
-				article2=new Article();
-				commentList.addAll(article.getCommentList());
-				article2.setId(article.getId());
-				article2.setName(article.getName());
-				article2.setContent(article.getContent());
-				i++;
-				continue;
-			}
-
+			idList.add(article.getId());
 		}
-		
-		model.addAttribute("articleList",articleList2);
-		
+		List<Integer> idSet = new ArrayList<Integer>(new LinkedHashSet<>(idList));
+		for (Integer id : idSet) {
+			for (Article article : articleList) {
+				if (id == article.getId()) {
+					commentList.addAll(article.getCommentList());
+					article2.setId(article.getId());
+					article2.setName(article.getName());
+					article2.setContent(article.getContent());
+				}
+
+			}
+			article2.setCommentList(commentList);
+			articleList2.add(article2);
+			commentList = new ArrayList<>();
+			article2 = new Article();
+		}
+		model.addAttribute("articleList", articleList2);
 		return "articlelist";
 	}
 
